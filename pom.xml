@@ -38,7 +38,7 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>designpattern</module>
+        <module>design-pattern</module>
     </modules>
 
     <dependencies>
