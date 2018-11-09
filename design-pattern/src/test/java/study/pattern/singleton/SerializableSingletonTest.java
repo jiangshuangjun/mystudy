@@ -20,9 +20,8 @@ public class SerializableSingletonTest {
         // 将 singleton 序列化，持久化到磁盘文件 serializableSingleton.txt
         String fileName = serializeObjectToFile("serializableSingleton.txt", singleton);
 
-        // 从磁盘文件 serializableSingleton.txt 中反序列化出对象 deserializeSingleton
-        SerializableSingleton deserializeSingleton = null;
-        deserializeSingleton = (SerializableSingleton) deserializeFileToObject(fileName, deserializeSingleton);
+        // 从磁盘文件 fileName 中反序列化出对象 deserializeSingleton
+        SerializableSingleton deserializeSingleton = (SerializableSingleton) deserializeFileToObject(fileName);
 
         log.debug("序列化时对象：{}", singleton.toString());
         log.debug("反序列化后对象：{}", deserializeSingleton.toString());
@@ -77,12 +76,13 @@ public class SerializableSingletonTest {
     /**
      * 将对象从对象文件中反序列化
      * @param fileName
-     * @param obj
      * @return
      */
-    public static Object deserializeFileToObject(String fileName, Object obj) {
+    public static Object deserializeFileToObject(String fileName) {
         FileInputStream fis = null;
         ObjectInputStream ois = null;
+
+        Object obj = null;
 
         try {
             fis = new FileInputStream(new File(fileName));
