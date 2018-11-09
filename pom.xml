@@ -8,14 +8,14 @@
     <artifactId>mystudy</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>mystudy</name>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <name>${project.artifactId}</name>
+    <description>Java Study</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.version>3.3</maven.compiler.version>
         <logback-classic.version>1.1.8</logback-classic.version>
         <logback-core.version>1.1.8</logback-core.version>
         <slf4j-api.version>1.7.25</slf4j-api.version>
@@ -28,9 +28,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
         </plugins>
@@ -46,7 +48,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>

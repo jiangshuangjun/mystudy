@@ -2,7 +2,7 @@ package study.pattern.singleton;
 
 /**
  * @author jiangsj
- * 饿汉式单例
+ * 饿汉式
  * 优点：
  *     (1) 没有加任何的锁，执行效率较高
  *     (2) 线程安全

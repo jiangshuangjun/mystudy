@@ -9,20 +9,22 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 
+import static org.junit.Assert.*;
+
 /**
  * @author jiangsj
- * {@link LazySingleton1} Test
+ * {@link RegisterSingletonFromEnum} Test
  */
 @Slf4j
-public class LazySingleton1Test {
+public class RegisterSingletonFromEnumTest {
 
     /**
-     * 并发获取 LazySingleton1 实例 Test
+     * 并发获取 RegisterSingletonFromEnum 实例 Test
      */
     @Test
-    public void concurrentGetLazySingleton1Test() throws Exception {
+    public void concurrentGetSingletonTest() throws Exception {
         // 模拟并发的线程数
-        int count = 500;
+        int count = 200;
 
         // 发令枪
         final CountDownLatch workThreadLatch = new CountDownLatch(count);
@@ -41,7 +43,7 @@ public class LazySingleton1Test {
                         // 阻塞，count = 0 就会释放所有的共享锁，模拟多线程并发获取单例
                         workThreadLatch.await();
 
-                        LazySingleton1 instance = LazySingleton1.getInstance();
+                        RegisterSingletonFromEnum instance = RegisterSingletonFromEnum.getInstance();
 
                         log.debug("当前时间: {}, 单例地址: {}", System.currentTimeMillis(), instance.toString());
 
@@ -66,6 +68,8 @@ public class LazySingleton1Test {
         long end = System.currentTimeMillis();
 
         log.debug("并发获取单例总耗时: {}", (end - start));
+        log.debug("模拟并发线程数：{}, 实际并发线程数：{}", count, instanceUrlList.size());
+
         Assert.assertEquals("线程数：" + count, "线程数：" + instanceUrlList.size());
 
         // 验证是否获取到不一致的单例
@@ -80,20 +84,20 @@ public class LazySingleton1Test {
     }
 
     /**
-     * 反射破坏 LazySingleton1 单例测试
+     * 反射破坏 RegisterSingletonFromEnum 单例测试
      */
     @Test
     public void breakSingletonByReflectionTest() throws Exception {
-        LazySingleton1 singleton1 = LazySingleton1.getInstance();
+        RegisterSingletonFromEnum singleton = RegisterSingletonFromEnum.getInstance();
 
-        Constructor<LazySingleton1> constructor = LazySingleton1.class.getDeclaredConstructor();
+        Constructor<RegisterSingletonFromEnum> constructor = RegisterSingletonFromEnum.class.getDeclaredConstructor();
         constructor.setAccessible(true);
-        LazySingleton1 singleton1FromReflection = constructor.newInstance();
+        RegisterSingletonFromEnum singletonFromReflection = constructor.newInstance();
 
-        log.debug("正常单例：{}", singleton1.toString());
-        log.debug("反射单例：{}", singleton1FromReflection.toString());
+        log.debug("正常单例：{}", singleton.toString());
+        log.debug("反射单例：{}", singletonFromReflection.toString());
 
-        Assert.assertEquals(singleton1.toString(), singleton1FromReflection.toString());
+        Assert.assertEquals(false, singleton.toString().equals(singletonFromReflection.toString()));
     }
 
 }

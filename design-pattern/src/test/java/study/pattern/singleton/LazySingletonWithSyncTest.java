@@ -11,13 +11,13 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * @author jiangsj
- * {@link HungrySingleton} Test
+ * {@link LazySingletonWithSync} Test
  */
 @Slf4j
-public class HungrySingletonTest {
+public class LazySingletonWithSyncTest {
 
     /**
-     * 并发获取 HungrySingleton 实例 Test
+     * 并发获取 LazySingletonWithSync 实例 Test
      */
     @Test
     public void concurrentGetSingletonTest() throws Exception {
@@ -41,7 +41,7 @@ public class HungrySingletonTest {
                         // 阻塞，count = 0 就会释放所有的共享锁，模拟多线程并发获取单例
                         workThreadLatch.await();
 
-                        HungrySingleton instance = HungrySingleton.getInstance();
+                        LazySingletonWithSync instance = LazySingletonWithSync.getInstance();
 
                         log.debug("当前时间: {}, 单例地址: {}", System.currentTimeMillis(), instance.toString());
 
@@ -82,15 +82,15 @@ public class HungrySingletonTest {
     }
 
     /**
-     * 反射破坏 HungrySingleton 单例测试
+     * 反射破坏 LazySingletonWithSync 单例测试
      */
     @Test
     public void breakSingletonByReflectionTest() throws Exception {
-        HungrySingleton singleton = HungrySingleton.getInstance();
+        LazySingletonWithSync singleton = LazySingletonWithSync.getInstance();
 
-        Constructor<HungrySingleton> constructor = HungrySingleton.class.getDeclaredConstructor();
+        Constructor<LazySingletonWithSync> constructor = LazySingletonWithSync.class.getDeclaredConstructor();
         constructor.setAccessible(true);
-        HungrySingleton singletonFromReflection = constructor.newInstance();
+        LazySingletonWithSync singletonFromReflection = constructor.newInstance();
 
         log.debug("正常单例：{}", singleton.toString());
         log.debug("反射单例：{}", singletonFromReflection.toString());
