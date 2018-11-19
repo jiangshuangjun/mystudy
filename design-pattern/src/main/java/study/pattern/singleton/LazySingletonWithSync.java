@@ -2,7 +2,7 @@ package study.pattern.singleton;
 
 /**
  * @author jiangsj
- * 懒汉式2
+ * 懒汉式
  * 优点:
  *     (1) 由于懒汉式延时加载特性，使用该实例时才实例化，节省了内存资源
  *     (2) 线程安全

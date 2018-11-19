@@ -2,7 +2,7 @@ package study.pattern.singleton;
 
 /**
  * @author jiangsj
- * 懒汉式1
+ * 懒汉式——无锁，线程不安全
  * 优点:
  *     由于懒汉式延时加载特性，使用该实例时才实例化，节省了内存资源
  *
