@@ -35,39 +35,18 @@ public class SerializableSingletonTest {
 
     /**
      * 将对象序列化到对象文件中
+     *
      * @param fileName
      * @param obj
      * @return
      */
     public static String serializeObjectToFile(String fileName, Object obj) {
-        FileOutputStream fos = null;
-        ObjectOutputStream oos = null;
-
-        try {
-            fos = new FileOutputStream(new File(fileName));
-            oos = new ObjectOutputStream(fos);
+        try (FileOutputStream fos = new FileOutputStream(new File(fileName));
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
 
             oos.writeObject(obj);
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e){
-            e.printStackTrace();
-        } finally {
-            if (oos != null) {
-                try {
-                    oos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
 
         return fileName;
@@ -75,42 +54,19 @@ public class SerializableSingletonTest {
 
     /**
      * 将对象从对象文件中反序列化
+     *
      * @param fileName
      * @return
      */
     public static Object deserializeFileToObject(String fileName) {
-        FileInputStream fis = null;
-        ObjectInputStream ois = null;
-
         Object obj = null;
 
-        try {
-            fis = new FileInputStream(new File(fileName));
-            ois = new ObjectInputStream(fis);
+        try (FileInputStream fis = new FileInputStream(new File(fileName));
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
 
             obj = ois.readObject();
-        } catch (FileNotFoundException e){
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
 
         return obj;
@@ -118,10 +74,11 @@ public class SerializableSingletonTest {
 
     /**
      * 删除单个文件
+     *
      * @param fileName
      * @return 是否删除文件成功
      */
-    public static boolean deleteFile(String fileName) {
+    private static boolean deleteFile(String fileName) {
         File file = new File(fileName);
 
         if (file.exists() && file.isFile()) {

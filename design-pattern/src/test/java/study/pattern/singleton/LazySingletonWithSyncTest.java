@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * @author jiangsj
@@ -16,39 +17,67 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 public class LazySingletonWithSyncTest {
 
-    /**
-     * 并发获取 LazySingletonWithSync 实例 Test
-     */
-    @Test
-    public void concurrentGetSingletonTest() throws Exception {
-        // 模拟并发的线程数
-        int count = 200;
+    private static final int CONCURRENT_THREAD_NUMBER = 200;
 
-        // 发令枪
-        final CountDownLatch workThreadLatch = new CountDownLatch(count);
-        final CountDownLatch mainThreadLatch = new CountDownLatch(count);
+    @Test
+    public void concurrentGetSingletonWithCyclicBarrierTest() throws Exception {
+        final CyclicBarrier barrier = new CyclicBarrier(CONCURRENT_THREAD_NUMBER);
+        final CountDownLatch latch = new CountDownLatch(CONCURRENT_THREAD_NUMBER);
 
         // 统计并发获取到的单例对象引用地址，用于验证获取到的单例是否是同一个
-        final List<String> instanceUrlList = new Vector<String>();
+        final List<String> instanceUrl = new Vector<String>();
 
-        long start = System.currentTimeMillis();
+        for (int i = 0; i < CONCURRENT_THREAD_NUMBER; i++) {
+            new Thread(){
+                @Override
+                public void run() {
+                    try {
+                        barrier.await();
 
-        for (int i = 0; i < count; i++) {
+                        LazySingletonWithSync instance = LazySingletonWithSync.getInstance();
+
+                        log.debug("当前时间: {}, 单例: {}", System.currentTimeMillis(), instance.toString());
+
+                        instanceUrl.add(instance.toString());
+
+                        latch.countDown();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        }
+
+        latch.await();
+
+        log.debug("模拟并发线程数：{}, 实际并发线程数：{}", CONCURRENT_THREAD_NUMBER, instanceUrl.size());
+        Assert.assertEquals("线程数：" + CONCURRENT_THREAD_NUMBER, "线程数：" + instanceUrl.size());
+
+        // 验证并发获取到的单例是否是同一个实例验证是否获取到不一致的单例
+        this.verifySingletonsIsSameOrNotWithAssert(instanceUrl);
+    }
+
+    @Test
+    public void concurrentGetSingletonWithCountDownLatchTest() throws Exception {
+        final CountDownLatch workThreadLatch = new CountDownLatch(CONCURRENT_THREAD_NUMBER);
+        final CountDownLatch mainThreadLatch = new CountDownLatch(CONCURRENT_THREAD_NUMBER);
+
+        // 统计并发获取到的单例对象引用地址，用于验证获取到的单例是否是同一个
+        final List<String> instanceUrl = new Vector<String>();
+
+        for (int i = 0; i < CONCURRENT_THREAD_NUMBER; i++) {
             new Thread() {
                 @Override
                 public void run() {
                     try {
-                        // 阻塞，count = 0 就会释放所有的共享锁，模拟多线程并发获取单例
                         workThreadLatch.await();
 
                         LazySingletonWithSync instance = LazySingletonWithSync.getInstance();
 
-                        log.debug("当前时间: {}, 单例地址: {}", System.currentTimeMillis(), instance.toString());
+                        log.debug("当前时间: {}, 单例: {}", System.currentTimeMillis(), instance.toString());
 
-                        // 将每次获取到的单例引用地址添加到list中，用于验证是否获取到同一单例
-                        instanceUrlList.add(instance.toString());
+                        instanceUrl.add(instance.toString());
 
-                        // 每循环一次，就启动一个线程；每启动一个线程，count--
                         mainThreadLatch.countDown();
                     } catch (Exception e) {
                         log.error("线程 {} 异常: {}", Thread.currentThread().getName(), e);
@@ -56,34 +85,18 @@ public class LazySingletonWithSyncTest {
                 }
             }.start();
 
-            // 每循环一次，就启动一个线程；每启动一个线程，count--
             workThreadLatch.countDown();
         }
 
-        // 阻塞，count = 0 再执行main线程下面代码
         mainThreadLatch.await();
 
-        long end = System.currentTimeMillis();
+        log.debug("模拟并发线程数：{}, 实际并发线程数：{}", CONCURRENT_THREAD_NUMBER, instanceUrl.size());
+        Assert.assertEquals("线程数：" + CONCURRENT_THREAD_NUMBER, "线程数：" + instanceUrl.size());
 
-        log.debug("并发获取单例总耗时: {}", (end - start));
-        log.debug("模拟并发线程数：{}, 实际并发线程数：{}", count, instanceUrlList.size());
-
-        Assert.assertEquals("线程数：" + count, "线程数：" + instanceUrlList.size());
-
-        // 验证是否获取到不一致的单例
-        for (int i = 0; i < instanceUrlList.size(); i++) {
-            if (i == instanceUrlList.size() - 1) {
-                Assert.assertEquals(instanceUrlList.get(i - 1), instanceUrlList.get(i));
-                break;
-            }
-
-            Assert.assertEquals(instanceUrlList.get(i), instanceUrlList.get(i + 1));
-        }
+        // 验证并发获取到的单例是否是同一个实例验证是否获取到不一致的单例
+        this.verifySingletonsIsSameOrNotWithAssert(instanceUrl);
     }
 
-    /**
-     * 反射破坏 LazySingletonWithSync 单例测试
-     */
     @Test
     public void breakSingletonByReflectionTest() throws Exception {
         LazySingletonWithSync singleton = LazySingletonWithSync.getInstance();
@@ -95,7 +108,21 @@ public class LazySingletonWithSyncTest {
         log.debug("正常单例：{}", singleton.toString());
         log.debug("反射单例：{}", singletonFromReflection.toString());
 
-        Assert.assertEquals(false, singleton.toString().equals(singletonFromReflection.toString()));
+        Assert.assertNotEquals(singleton.toString(), singletonFromReflection.toString());
+    }
+
+    /**
+     * 验证并发获取到的单例是否是同一个实例
+     */
+    private void verifySingletonsIsSameOrNotWithAssert(final List<String> instanceUrl) {
+        for (int i = 0; i < instanceUrl.size(); i++) {
+            if (i == instanceUrl.size() - 1) {
+                Assert.assertEquals(instanceUrl.get(i - 1), instanceUrl.get(i));
+                break;
+            }
+
+            Assert.assertEquals(instanceUrl.get(i), instanceUrl.get(i + 1));
+        }
     }
 
 }
