@@ -28,24 +28,21 @@ public class LazySingletonWithSyncTest {
         final List<String> instanceUrl = new Vector<String>();
 
         for (int i = 0; i < CONCURRENT_THREAD_NUMBER; i++) {
-            new Thread(){
-                @Override
-                public void run() {
-                    try {
-                        barrier.await();
+            new Thread(() -> {
+                try {
+                    barrier.await();
 
-                        LazySingletonWithSync instance = LazySingletonWithSync.getInstance();
+                    LazySingletonWithSync instance = LazySingletonWithSync.getInstance();
 
-                        log.debug("当前时间: {}, 单例: {}", System.currentTimeMillis(), instance.toString());
+                    log.debug("当前时间: {}, 单例: {}", System.currentTimeMillis(), instance.toString());
 
-                        instanceUrl.add(instance.toString());
+                    instanceUrl.add(instance.toString());
 
-                        latch.countDown();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    latch.countDown();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }.start();
+            }).start();
         }
 
         latch.await();
@@ -53,7 +50,7 @@ public class LazySingletonWithSyncTest {
         log.debug("模拟并发线程数：{}, 实际并发线程数：{}", CONCURRENT_THREAD_NUMBER, instanceUrl.size());
         Assert.assertEquals("线程数：" + CONCURRENT_THREAD_NUMBER, "线程数：" + instanceUrl.size());
 
-        // 验证并发获取到的单例是否是同一个实例验证是否获取到不一致的单例
+        // 验证并发获取到的单例是否是同一个实例
         this.verifySingletonsIsSameOrNotWithAssert(instanceUrl);
     }
 
@@ -66,24 +63,21 @@ public class LazySingletonWithSyncTest {
         final List<String> instanceUrl = new Vector<String>();
 
         for (int i = 0; i < CONCURRENT_THREAD_NUMBER; i++) {
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        workThreadLatch.await();
+            new Thread(() -> {
+                try {
+                    workThreadLatch.await();
 
-                        LazySingletonWithSync instance = LazySingletonWithSync.getInstance();
+                    LazySingletonWithSync instance = LazySingletonWithSync.getInstance();
 
-                        log.debug("当前时间: {}, 单例: {}", System.currentTimeMillis(), instance.toString());
+                    log.debug("当前时间: {}, 单例: {}", System.currentTimeMillis(), instance.toString());
 
-                        instanceUrl.add(instance.toString());
+                    instanceUrl.add(instance.toString());
 
-                        mainThreadLatch.countDown();
-                    } catch (Exception e) {
-                        log.error("线程 {} 异常: {}", Thread.currentThread().getName(), e);
-                    }
+                    mainThreadLatch.countDown();
+                } catch (Exception e) {
+                    log.error("线程 {} 异常: {}", Thread.currentThread().getName(), e);
                 }
-            }.start();
+            }).start();
 
             workThreadLatch.countDown();
         }
@@ -93,7 +87,7 @@ public class LazySingletonWithSyncTest {
         log.debug("模拟并发线程数：{}, 实际并发线程数：{}", CONCURRENT_THREAD_NUMBER, instanceUrl.size());
         Assert.assertEquals("线程数：" + CONCURRENT_THREAD_NUMBER, "线程数：" + instanceUrl.size());
 
-        // 验证并发获取到的单例是否是同一个实例验证是否获取到不一致的单例
+        // 验证并发获取到的单例是否是同一个实例
         this.verifySingletonsIsSameOrNotWithAssert(instanceUrl);
     }
 
