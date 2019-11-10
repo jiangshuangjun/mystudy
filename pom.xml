@@ -41,6 +41,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>design-pattern</module>
+        <module>interview</module>
     </modules>
 
     <dependencies>
