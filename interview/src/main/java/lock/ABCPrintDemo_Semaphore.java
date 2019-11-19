@@ -2,13 +2,14 @@ package lock;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ABCPrintDemo_Semaphore {
 
     private static Semaphore A = new Semaphore(1);
     private static Semaphore B = new Semaphore(0);
     private static Semaphore C = new Semaphore(0);
-    private volatile int num = 1;
+    private AtomicInteger num = new AtomicInteger(1);
 
     public void printA() {
         try {
@@ -42,7 +43,7 @@ public class ABCPrintDemo_Semaphore {
 
             System.out.println(Thread.currentThread().getName() + ":\t" + "C");
             // 这个 num 是让 main 线程用来控制结束的标志
-            num++;
+            num.getAndIncrement();
             TimeUnit.SECONDS.sleep(1);
 
             A.release();
@@ -72,7 +73,7 @@ public class ABCPrintDemo_Semaphore {
             }
         }, "C").start();
 
-        while (resource.num <= 3) {}
+        while (resource.num.get() <= 3) {}
 
         System.exit(0);
     }
