@@ -1,15 +1,14 @@
 package oom;
 
-import java.util.Random;
-
+/**
+ * @author jiangsj
+ * JVM 参数 : -Xms10m -Xmx10m
+ */
 public class JavaHeapSpaceDemo {
-    public static void main(String[] args){
-        String str = "seu";
 
-        while(true){
-            str += str + new Random().nextInt(11111111)+new Random().nextInt(22222222);
-            str.intern();
-        }
-
+    public static void main(String[] args) {
+        // new 一个 11MB 的对象，直接撑爆最大堆内存
+        Byte[] bytes = new Byte[11 * 1024 * 1024];
     }
+
 }
